@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f2ea;
+  --bg-warm: #f0e9dd;
+  --card: #ffffff;
+  --surface: #ffffff;
+  --dark: #1a1a1a;
+  --muted: #555;
+  --light-text: #6b6b6b;
+  --hairline: #e5ddd0;
+  --teal: #0d6b58;
+  --teal-light: #e0f3ee;
+  --amber: #c98a1e;
+  --amber-light: #fcf0d8;
+  --coral: #d94f2b;
+  --coral-light: #fce8e2;
+  --shadow: rgba(0,0,0,0.12);
+}
+
+[data-theme="dark"] {
+  --bg: #111412;
+  --bg-warm: #171b18;
+  --card: #1b201d;
+  --surface: #151917;
+  --dark: #f4f0e8;
+  --muted: #bbb4a9;
+  --light-text: #8f887f;
+  --hairline: #30352f;
+  --teal: #32d6aa;
+  --teal-light: #12352c;
+  --amber: #f0b64a;
+  --amber-light: #352511;
+  --coral: #ff7556;
+  --coral-light: #351813;
+  --shadow: rgba(0,0,0,0.45);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: var(--font-inter), sans-serif;
+  color: var(--dark);
+  background: var(--bg);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { overflow-x: hidden; }
+body { background: var(--bg); color: var(--dark); }
+
+::selection {
+  background: var(--teal);
+  color: white;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile: reduce oversized section gutters (sections use inline 110px 60px).
+   #contact is excluded — its backgrounds live on inner divs (handled in Contact.tsx). */
+@media (max-width: 640px) {
+  main > section:not(#contact) {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+}
