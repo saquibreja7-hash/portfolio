@@ -3,21 +3,19 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
 
-const R2 = "https://pub-c4c57fdf67d242f582ba15043d5ade5c.r2.dev";
-
 const items = [
   {
     label: "Social Media Content",
     count: "845+",
     sub: "Campaigns, news posts & event promotions",
-    image: `${R2}/02_Social%20Media%20Content/16%20Days%20of%20Activism%20Campaign/16%20Days%20Activism%20Campaign%20%281%29.png`,
+    image: "/gallery/16days-activism.png",
     slug: "social-media-content",
   },
   {
     label: "Design Samples",
     count: "77",
     sub: "Reports, speaker panels & posters",
-    image: `${R2}/05_Design%20Samples/Annual%20Report%20Cover%20Page/1.png`,
+    image: "/gallery/annual-report.png",
     slug: "design-samples",
   },
   {
