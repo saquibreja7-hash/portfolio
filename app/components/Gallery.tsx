@@ -47,7 +47,7 @@ export default function Gallery() {
             <p style={{ display: "inline-flex", alignItems: "center", minHeight: 34, border: "1px solid var(--hairline)", borderRadius: 999, padding: "0 18px", color: "var(--dark)", fontSize: 13, fontWeight: 700, background: "var(--card)", marginBottom: 20 }}>
               Portfolio
             </p>
-            <h2 style={{ fontSize: "clamp(36px, 5vw, 58px)", fontWeight: 900, letterSpacing: "-0.055em", color: "var(--dark)", lineHeight: 1.05 }}>
+            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 36px)", fontWeight: 800, letterSpacing: "-0.03em", color: "var(--dark)", lineHeight: 1.2 }}>
               Explore my portfolio of<br />creative solutions
             </h2>
           </div>

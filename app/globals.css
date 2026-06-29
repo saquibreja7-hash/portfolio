@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Map shadcn-style utility classes to the portfolio's existing CSS variables.
+   Tailwind v4 picks up --color-* tokens from @theme automatically. */
+@theme {
+  --color-background: var(--bg);
+  --color-foreground: var(--dark);
+  --color-muted-foreground: var(--muted);
+  --color-primary: var(--teal);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--bg-warm);
+  --color-secondary-foreground: var(--dark);
+}
+
 :root {
   --bg: #f7f2ea;
   --bg-warm: #f0e9dd;

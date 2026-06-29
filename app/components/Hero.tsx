@@ -1,11 +1,93 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate, useAnimationFrame } from "framer-motion";
 import Image from "next/image";
 
-export default function Hero() {
+function GridPattern({
+  offsetX,
+  offsetY,
+}: {
+  offsetX: ReturnType<typeof useMotionValue<number>>;
+  offsetY: ReturnType<typeof useMotionValue<number>>;
+}) {
   return (
-    <section style={{ minHeight: "100vh", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", padding: "112px 48px 64px" }}>
-      <div style={{ maxWidth: 900, width: "100%", margin: "0 auto", textAlign: "center" }}>
+    <svg style={{ width: "100%", height: "100%" }}>
+      <defs>
+        <motion.pattern
+          id="hero-grid-pattern"
+          width="40"
+          height="40"
+          patternUnits="userSpaceOnUse"
+          x={offsetX}
+          y={offsetY}
+        >
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--muted)" strokeWidth="1" />
+        </motion.pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hero-grid-pattern)" />
+    </svg>
+  );
+}
+
+export default function Hero() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const gridOffsetX = useMotionValue(0);
+  const gridOffsetY = useMotionValue(0);
+
+  useAnimationFrame(() => {
+    gridOffsetX.set((gridOffsetX.get() + 0.5) % 40);
+    gridOffsetY.set((gridOffsetY.get() + 0.5) % 40);
+  });
+
+  const maskImage = useMotionTemplate`radial-gradient(320px circle at ${mouseX}px ${mouseY}px, black, transparent)`;
+
+  return (
+    <section
+      onMouseMove={(e) => {
+        const { left, top } = e.currentTarget.getBoundingClientRect();
+        mouseX.set(e.clientX - left);
+        mouseY.set(e.clientY - top);
+      }}
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        background: "var(--surface)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "112px 48px 64px",
+        overflow: "hidden",
+      }}
+    >
+      {/* Scrolling grid — base dim layer */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.06 }}>
+        <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
+      </div>
+
+      {/* Scrolling grid — cursor-revealed layer */}
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          opacity: 0.35,
+          maskImage,
+          WebkitMaskImage: maskImage,
+        }}
+      >
+        <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
+      </motion.div>
+
+      {/* Ambient colour blobs */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+        <div style={{ position: "absolute", right: "-15%", top: "-15%", width: "45%", height: "45%", borderRadius: "50%", background: "rgba(201,138,30,0.18)", filter: "blur(100px)" }} />
+        <div style={{ position: "absolute", right: "5%", top: "-5%", width: "22%", height: "22%", borderRadius: "50%", background: "rgba(13,107,88,0.12)", filter: "blur(80px)" }} />
+        <div style={{ position: "absolute", left: "-10%", bottom: "-15%", width: "40%", height: "40%", borderRadius: "50%", background: "rgba(59,130,246,0.1)", filter: "blur(100px)" }} />
+      </div>
+
+      {/* Hero content */}
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 900, width: "100%", margin: "0 auto", textAlign: "center" }}>
 
         {/* Photo + floating name tag */}
         <motion.div
@@ -90,6 +172,7 @@ export default function Hero() {
         </motion.div>
 
       </div>
+
       <style>{`
         @media (max-width: 700px) { .association-grid { grid-template-columns: 1fr !important; } }
         @media (max-width: 380px) { .hero-name-tag { left: calc(50% + 24px) !important; font-size: 11px !important; padding: 4px 11px !important; } }
