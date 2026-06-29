@@ -1,7 +1,9 @@
 import { AwsClient } from "aws4fetch";
 import { NextRequest, NextResponse } from "next/server";
+import galleryManifest from "../../data/gallery-manifest.json";
 
-const R2_PUBLIC = process.env.R2_PUBLIC_URL!;
+const R2_PUBLIC =
+  process.env.R2_PUBLIC_URL || "https://pub-c4c57fdf67d242f582ba15043d5ade5c.r2.dev";
 const BUCKET = "portfolio-assets";
 
 const ALLOWED_PREFIXES = [
@@ -16,8 +18,26 @@ export const dynamic = "force-dynamic";
 const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"]);
 const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov"]);
 
+type ManifestEntry = {
+  urls: string[];
+  videos: string[];
+  pdfs: string[];
+  count: number;
+};
+
+type GalleryResponse = ManifestEntry & {
+  nextCursor: string | null;
+  source?: "r2" | "manifest";
+};
+
+const MANIFEST = galleryManifest as Record<string, ManifestEntry>;
+
 function toUrl(key: string) {
   return `${R2_PUBLIC}/${key.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+function hasR2Env() {
+  return Boolean(process.env.R2_ENDPOINT && process.env.R2_ACCESS_KEY && process.env.R2_SECRET_KEY);
 }
 
 function getAws(): AwsClient {
@@ -78,6 +98,40 @@ function classifyKeys(keys: string[]) {
   return { images, videos, pdfs };
 }
 
+function manifestResponse(prefix: string, limit: number | null, cursor?: string): GalleryResponse | null {
+  const entry = MANIFEST[prefix];
+  if (!entry) return null;
+
+  if (limit === null) {
+    return { ...entry, nextCursor: null, source: "manifest" };
+  }
+
+  const start = cursor ? Math.max(parseInt(cursor, 10) || 0, 0) : 0;
+  const items = [
+    ...entry.urls.map((url) => ({ type: "url" as const, url })),
+    ...entry.videos.map((url) => ({ type: "video" as const, url })),
+    ...entry.pdfs.map((url) => ({ type: "pdf" as const, url })),
+  ];
+  const page = items.slice(start, start + limit);
+  const nextCursor = start + limit < items.length ? String(start + limit) : null;
+
+  return {
+    urls: page.filter((item) => item.type === "url").map((item) => item.url),
+    videos: page.filter((item) => item.type === "video").map((item) => item.url),
+    pdfs: page.filter((item) => item.type === "pdf").map((item) => item.url),
+    count: page.length,
+    nextCursor,
+    source: "manifest",
+  };
+}
+
+function jsonGallery(data: GalleryResponse, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: { "Cache-Control": "public, max-age=300, s-maxage=3600" },
+  });
+}
+
 export async function GET(req: NextRequest) {
   const prefix = req.nextUrl.searchParams.get("prefix");
   if (!prefix) return NextResponse.json({ error: "prefix required" }, { status: 400 });
@@ -90,21 +144,24 @@ export async function GET(req: NextRequest) {
   const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
   const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10), 1), 500) : null;
 
+  const fallback = manifestResponse(prefix, limit, cursor);
+  if (!hasR2Env() && fallback) {
+    return jsonGallery(fallback);
+  }
+
   try {
     if (limit !== null) {
       // Paginated: single request, return cursor for next page
       const { keys, nextContinuationToken } = await listObjectsOnce(prefix, limit, cursor);
       const { images, videos, pdfs } = classifyKeys(keys);
-      return NextResponse.json(
-        {
+      return jsonGallery({
           urls: images,
           videos,
           pdfs,
           count: images.length + videos.length + pdfs.length,
           nextCursor: nextContinuationToken ?? null,
-        },
-        { headers: { "Cache-Control": "public, max-age=300, s-maxage=3600" } }
-      );
+          source: "r2",
+        });
     }
 
     // No limit — fetch all pages (for small galleries like Impact + Reports)
@@ -121,12 +178,20 @@ export async function GET(req: NextRequest) {
       token = nextContinuationToken;
     } while (token);
 
-    return NextResponse.json(
-      { urls: allImages, videos: allVideos, pdfs: allPdfs, count: allImages.length + allVideos.length + allPdfs.length, nextCursor: null },
-      { headers: { "Cache-Control": "public, max-age=300, s-maxage=3600" } }
-    );
+    return jsonGallery({
+      urls: allImages,
+      videos: allVideos,
+      pdfs: allPdfs,
+      count: allImages.length + allVideos.length + allPdfs.length,
+      nextCursor: null,
+      source: "r2",
+    });
   } catch (err) {
     console.error("Gallery listing failed:", err);
+    if (fallback) {
+      return jsonGallery(fallback);
+    }
+
     return NextResponse.json(
       { urls: [], videos: [], pdfs: [], count: 0, nextCursor: null, error: "Failed to load gallery" },
       { status: 502 }
