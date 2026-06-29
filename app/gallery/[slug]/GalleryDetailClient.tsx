@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect, Suspense } from "react";
 import { categories, type SubCategory } from "./categories";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const THUMBNAIL_TO_PDF: Record<string, string> = {
   "16 Days of Actvism.png": "16 Days Of Activism Toolkit.pdf",
@@ -69,34 +69,48 @@ function SubGrid({ sub, showHeading, initialCount, onImageClick }: {
   const [allImages, setAllImages] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [pdfs, setPdfs] = useState<string[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  const [visible, setVisible] = useState(initialCount);
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const markFailed = (url: string) =>
     setFailed(prev => (prev.has(url) ? prev : new Set(prev).add(url)));
 
   useEffect(() => {
-    const fetchJson = async (prefix: string) => {
+    const fetchAll = async (prefix: string) => {
       const r = await fetch(`/api/gallery?prefix=${encodeURIComponent(prefix)}`);
       if (!r.ok) throw new Error(`Gallery fetch failed: ${r.status}`);
       return r.json();
     };
-    const promises: Promise<void>[] = [
-      fetchJson(sub.folder + "/").then(data => {
-        setAllImages(data.urls || []);
-        setVideos(data.videos || []);
-        if (!sub.pdfFolder) setPdfs(data.pdfs || []);
-      }),
-    ];
+
     if (sub.pdfFolder) {
-      promises.push(
-        fetchJson(sub.pdfFolder + "/").then(data => { setPdfs(data.pdfs || []); })
-      );
+      // Impact & Reports: small set, fetch everything at once
+      Promise.all([
+        fetchAll(sub.folder + "/").then(data => {
+          setAllImages(data.urls || []);
+          setVideos(data.videos || []);
+        }),
+        fetchAll(sub.pdfFolder + "/").then(data => { setPdfs(data.pdfs || []); }),
+      ])
+        .then(() => setLoading(false))
+        .catch(() => { setError(true); setLoading(false); });
+    } else {
+      // Regular gallery: paginated — only fetch first page
+      const url = `/api/gallery?prefix=${encodeURIComponent(sub.folder + "/")}&limit=${PAGE_SIZE}`;
+      fetch(url)
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`${r.status}`)))
+        .then(data => {
+          setAllImages(data.urls || []);
+          setVideos(data.videos || []);
+          setPdfs(data.pdfs || []);
+          setNextCursor(data.nextCursor || null);
+          setHasMore(!!data.nextCursor);
+          setLoading(false);
+        })
+        .catch(() => { setError(true); setLoading(false); });
     }
-    Promise.all(promises)
-      .then(() => setLoading(false))
-      .catch(() => { setError(true); setLoading(false); });
   }, [sub.folder, sub.pdfFolder]);
 
   const reportMedia = sub.pdfFolder
@@ -122,10 +136,27 @@ function SubGrid({ sub, showHeading, initialCount, onImageClick }: {
         isVideo: false,
       }));
   const allMedia = sub.pdfFolder ? reportMedia : [...regularMedia, ...folderPdfMedia];
-  const shown = allMedia.slice(0, visible);
-  const hasMore = visible < allMedia.length;
+  const shown = allMedia; // all fetched items are shown; server controls the page
 
-  const loadMore = () => setVisible(v => Math.min(v + PAGE_SIZE, allMedia.length));
+  const loadMore = async () => {
+    if (!hasMore || loadingMore || !nextCursor) return;
+    setLoadingMore(true);
+    const url = `/api/gallery?prefix=${encodeURIComponent(sub.folder + "/")}&limit=${PAGE_SIZE}&cursor=${encodeURIComponent(nextCursor)}`;
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`${r.status}`);
+      const data = await r.json();
+      setAllImages(prev => [...prev, ...(data.urls || [])]);
+      setVideos(prev => [...prev, ...(data.videos || [])]);
+      setPdfs(prev => [...prev, ...(data.pdfs || [])]);
+      setNextCursor(data.nextCursor || null);
+      setHasMore(!!data.nextCursor);
+    } catch {
+      // silently ignore — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div style={{ padding: "0 40px 60px" }}>
@@ -150,7 +181,7 @@ function SubGrid({ sub, showHeading, initialCount, onImageClick }: {
           </div>
         )}
         <div style={{ columnCount: 3, columnGap: 16 }} className="masonry-grid">
-          {shown.map((media, i) => {
+          {allMedia.map((media, i) => {
             const linkedPdf = media.isPdf ? media.url : thumbnailToPdfUrl(media.url, pdfs);
             const showFilenameCard = !media.previewUrl || failed.has(media.previewUrl);
             const activate = () => {
@@ -210,11 +241,11 @@ function SubGrid({ sub, showHeading, initialCount, onImageClick }: {
         </div>
         {hasMore && (
           <div style={{ textAlign: "center", marginTop: 32 }}>
-            <button onClick={loadMore}
-              style={{ fontSize: 13, fontWeight: 600, padding: "12px 32px", borderRadius: 90, border: "2px solid var(--hairline)", background: "white", color: "var(--dark)", cursor: "pointer", transition: "all 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--dark)"; e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = "var(--dark)"; }}
+            <button onClick={loadMore} disabled={loadingMore}
+              style={{ fontSize: 13, fontWeight: 600, padding: "12px 32px", borderRadius: 90, border: "2px solid var(--hairline)", background: "white", color: "var(--dark)", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.6 : 1, transition: "all 0.2s" }}
+              onMouseEnter={e => { if (!loadingMore) { e.currentTarget.style.background = "var(--dark)"; e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = "var(--dark)"; } }}
               onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.borderColor = "var(--hairline)"; }}>
-              Load More ({allMedia.length - visible} remaining)
+              {loadingMore ? "Loading…" : "Load More"}
             </button>
           </div>
         )}

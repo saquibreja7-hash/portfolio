@@ -50,7 +50,7 @@ export default function Contact() {
             {/* Brand */}
             <div>
               <span style={{ fontSize: 20, fontWeight: 800, color: "var(--teal)", letterSpacing: "-0.02em" }}>Saquib.</span>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 8, maxWidth: 260, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 8, maxWidth: 260, lineHeight: 1.6 }}>
                 Communications & Digital Safety professional based in New Delhi.
               </p>
             </div>
@@ -58,24 +58,24 @@ export default function Contact() {
             {/* Nav + Contact columns */}
             <div style={{ display: "flex", gap: 56 }}>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 16 }}>Navigate</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)", marginBottom: 16 }}>Navigate</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {["About", "Experience", "Work", "Gallery"].map(item => (
                     <a key={item} href={`#${item.toLowerCase()}`}
-                      style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", transition: "color 0.2s" }}
+                      style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", textDecoration: "none", transition: "color 0.2s" }}
                       onMouseEnter={e => (e.currentTarget.style.color = "white")}
-                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}>
+                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.75)")}>
                       {item}
                     </a>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 16 }}>Contact</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)", marginBottom: 16 }}>Contact</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <a href={`mailto:${email}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>{email}</a>
-                  <a href={`tel:${phone.replace(/\s/g, "")}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>{phone}</a>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>New Delhi, India</span>
+                  <a href={`mailto:${email}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", textDecoration: "none" }}>{email}</a>
+                  <a href={`tel:${phone.replace(/\s/g, "")}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", textDecoration: "none" }}>{phone}</a>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>New Delhi, India</span>
                 </div>
               </div>
             </div>
@@ -83,8 +83,8 @@ export default function Contact() {
 
           {/* Copyright bar */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "20px 0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>© 2025 Saquib Jamil</span>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>JAMSAQ STUDIO</span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>© 2025 Saquib Jamil</span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>JAMSAQ STUDIO</span>
           </div>
         </div>
       </div>

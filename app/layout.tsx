@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { MotionConfig } from "framer-motion";
 import CommandMenu from "./components/CommandMenu";
 import { commandItems, siteUrl } from "./site-data";
 
@@ -56,8 +57,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
         />
-        {children}
-        <CommandMenu items={commandItems} />
+        <MotionConfig reducedMotion="user">
+          {children}
+          <CommandMenu items={commandItems} />
+        </MotionConfig>
       </body>
     </html>
   );

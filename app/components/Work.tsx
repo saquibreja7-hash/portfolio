@@ -30,7 +30,7 @@ const projects = [
     description: "Branding, content systems, sponsorship support, and stakeholder messaging for a national trust and safety convening.",
     tags: ["TASI", "Branding", "Convening"],
     image: "/gallery/tasi-cover.png",
-    link: null,
+    link: "https://trustandsafetyindia.org/",
   },
 ];
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const stats = [
   { value: 1000, suffix: "+", label: "Assets" },
@@ -39,10 +39,9 @@ function Stat({ value, suffix, label, active }: { value: number; suffix: string;
 export default function StatsBar() {
   const [visible, setVisible] = useState(false);
   const [animated, setAnimated] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
+    const sentinel = document.getElementById("hero-sentinel");
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -58,8 +57,6 @@ export default function StatsBar() {
 
   return (
     <>
-      {/* Sentinel placed at the bottom of the hero */}
-      <div ref={sentinelRef} style={{ position: "absolute", top: "100vh", left: 0, height: 1, width: 1, pointerEvents: "none" }} />
 
       <div style={{
         position: "fixed", top: 64, left: 0, right: 0, zIndex: 99,

@@ -77,13 +77,13 @@ export default function Hero() {
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }} className="association-grid">
             {[
-              ["Centre for Social Research", "Project coordination"],
-              ["TASI", "Trust & safety convening"],
-              ["ACTS", "Digital safety alliance"],
-            ].map(([org, sub]) => (
+              ["Centre for Social Research", "Project Coordinator"],
+              ["Trust & Safety India Festival", "Core Team"],
+              ["Alliance for Cyber Trust & Safety", "Secretariat"],
+            ].map(([org, role]) => (
               <div key={org} style={{ border: "1px solid var(--hairline)", borderRadius: 12, padding: "14px 16px", textAlign: "left", background: "var(--bg)" }}>
-                <span style={{ display: "block", fontSize: 13, fontWeight: 800, color: "var(--dark)", marginBottom: 4 }}>{org}</span>
-                <span style={{ display: "block", fontSize: 11, color: "var(--light-text)" }}>{sub}</span>
+                <span style={{ display: "block", fontSize: 13, fontWeight: 800, color: "var(--dark)", marginBottom: 6 }}>{org}</span>
+                <span style={{ display: "inline-block", fontSize: 10, fontWeight: 700, color: "var(--teal)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{role}</span>
               </div>
             ))}
           </div>
@@ -94,6 +94,8 @@ export default function Hero() {
         @media (max-width: 700px) { .association-grid { grid-template-columns: 1fr !important; } }
         @media (max-width: 380px) { .hero-name-tag { left: calc(50% + 24px) !important; font-size: 11px !important; padding: 4px 11px !important; } }
       `}</style>
+      {/* Sentinel observed by StatsBar — must be at actual bottom of hero */}
+      <div id="hero-sentinel" style={{ height: 1 }} />
     </section>
   );
 }
